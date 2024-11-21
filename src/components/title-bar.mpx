@@ -1,0 +1,22 @@
+<template minapp='mpx' xlang='wxml'>
+    <view style="height:100rm"></view>
+</template>
+
+<script>
+import { createComponent } from "@mpxjs/core";
+
+createComponent({
+    data: {
+        statusBarHeight: wx.getSystemInfoSync()["statusBarHeight"]
+    }
+});
+</script>
+
+
+<style lang="stylus"></style>
+
+<script type="application/json">
+  {
+    "component": true
+  }
+</script>

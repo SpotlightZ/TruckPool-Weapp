@@ -1,0 +1,63 @@
+<script>
+import mpx from "@mpxjs/core";
+import apiProxy from "@mpxjs/api-proxy";
+import fetch from "@mpxjs/fetch";
+import { installInterceptors } from "./service/fetch-intercepters";
+import { Promisify } from "./util/promisify";
+
+import store from "./store";
+mpx.use(apiProxy, { usePromise: true });
+mpx.use(fetch);
+installInterceptors(mpx, store);
+// app.js
+App({
+	globalData: {},
+	async onLaunch() {
+        let e = wx.getSystemInfoSync()
+
+        this.globalData.StatusBar = e.statusBarHeight;
+        let custom = wx.getMenuButtonBoundingClientRect();
+        this.globalData.Custom = custom;
+        this.globalData.CustomBar = custom.bottom + custom.top - e.statusBarHeight;
+
+
+	},
+    onShow(){
+
+    },
+    onHide(){
+
+    }
+});
+
+
+</script>
+
+
+
+<style>
+@import "./components/colorui/main.wxss";
+@import "./components/colorui/icon.wxss";
+@import "./icon.wxss";
+@import "./main.wxss";
+</style>
+
+<script type="application/json">
+{
+
+  "pages": [
+
+    "./pages/index",
+    "./pages/payment",
+    "./pages/login",
+    "./pages/create-order",
+    "./pages/address-select-map",
+    "./pages/order-detail"
+  ],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "获取您当前位置以便下达订单"
+    }
+  }
+}
+</script>

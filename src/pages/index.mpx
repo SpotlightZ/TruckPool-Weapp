@@ -1,0 +1,94 @@
+<template>
+	<view class="flex-column max-page-height">
+        <view class="flex-sub" style="overflow: hidden">
+            <navigate-login-view wx:show="{{!isLoggedin && tabActive != 0}}"></navigate-login-view>
+			<home-view wx:show="{{tabActive == 0}}"></home-view>
+			<order-view wx:show="{{isLoggedin && tabActive == 1}}"></order-view>
+			<account-view wx:show="{{isLoggedin && tabActive == 2}}"></account-view>
+        </view>
+
+
+		<view class="cu-bar tabbar bg-white tabbar solid-top">
+			<view
+				wx:for="{{tabMenu}}"
+                wx:key="{{index}}"
+				class="action {{tabActive == index ? 'text-orange':'text-grey' }}"
+				bindtap="onTabBarSwitch(index)"
+			>
+				<view class="{{item.icon}}"></view>
+				{{item.text}}
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+import { createPage } from "@mpxjs/core";
+import store from "../store.js";
+
+let tabMenu = [
+	{
+		title: "首页",
+		text: "首页",
+		icon: "cuIcon-home"
+	},
+	{
+		title: "订单",
+		text: "订单",
+		icon: "cuIcon-form"
+	},
+	{
+		title: "我的",
+		text: "我的",
+		icon: "cuIcon-people"
+	}
+];
+
+createPage({
+	data: {
+		tabMenu
+	},
+	onLoad() {
+		this.onTabBarSwitch(0);
+	},
+
+	onTabBarSwitch(index) {
+
+		store.commit("switchTab", index);
+		wx.setNavigationBarTitle({
+			title: ["首页", "订单", "我的"][index]
+		});
+	},
+
+	computed: store.mapState(["tabActive", "isLoggedin"])
+});
+</script>
+
+<style>
+page {
+	background-color: #fdfdfd;
+}
+.tabbar {
+	/* position: absolute; */
+	bottom: 0px;
+	right: 0px;
+	left: 0px;
+}
+</style>
+
+
+<script type="application/json">
+  {
+    "usingComponents": {
+      "home-view": "../components/home-view",
+      "order-view": "../components/order-view",
+      "account-view": "../components/account-view",
+      "navigate-login-view": "../components/navigate-login-view"
+    },
+
+    "navigationStyle": "default",
+    "navigationBarBackgroundColor": "#ffffffff",
+    "navigationBarTextStyle": "black",
+    "disableScroll": true
+  }
+</script>

@@ -1,0 +1,17 @@
+{
+	"compileType": "miniprogram",
+	"setting": {
+		"newFeature": true,
+		"urlCheck": true,
+		"es6": false,
+		"postcss": true,
+		"minified": false,
+		"autoAudits": false
+	},
+	"appid": "wx77f8a39f03023b57",
+	"projectname": "truckpool",
+	"description": "truckpool mini program",
+	"simulatorType": "wechat",
+	"simulatorPluginLibVersion": {},
+	"condition": {}
+}

@@ -1,0 +1,47 @@
+<template>
+    <view class="background">
+        <image src="{{backImage}}" class="image"></image>
+        <view class="text-lg text-gray">登陆后可查看</view>
+        <button class="cu-btn bg-orange round margin-top " bindtap="handleLogin">立即登陆</button>
+    </view>
+</template>
+
+<script>
+import { createComponent } from "@mpxjs/core";
+import backImage from "../image/nav-login-bkg.png";
+createComponent({
+    options: {
+        styleIsolation: "apply-shared"
+    },
+    data: {
+        backImage
+    },
+    methods: {
+      handleLogin(){
+        wx.navigateTo({ url: "../pages/login" });
+      }
+    }
+});
+</script>
+
+
+<style>
+.background {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.image{
+    width: 300rpx;
+    height: 350rpx;
+    padding-bottom: 50rpx;
+}
+</style>
+
+<script type="application/json">
+  {
+    "component": true
+  }
+</script>

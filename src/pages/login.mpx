@@ -1,0 +1,70 @@
+<template>
+	<view class="flex-column max-page-height bg-white">
+		<view class="title-bar text-black">
+			<cu-custom isBack="{{true}}"></cu-custom>
+		</view>
+		<view class="content flex-sub">
+			<view class="text-xxl text-center">欢迎登陆</view>
+			<view class="text-df text-center padding-top">使用微信账号登陆</view>
+
+			<button
+				class="login-btn cu-btn bg-orange lg shadow"
+				open-type="getUserInfo"
+				bindgetuserinfo="userInfoHandler"
+			>微信授权登陆</button>
+		</view>
+		<view class="padding text-sm">
+			<text>登陆代表同意TruckPool用户协议、隐私政策，并授权保存您的账号信息以便统一管理</text>
+		</view>
+	</view>
+</template>
+
+<script>
+import { createPage } from "@mpxjs/core";
+import { userLogin } from "../service/access-service.js";
+import { getUserProfile } from "../service/user-service.js";
+createPage({
+	options: {
+		styleIsolation: "apply-shared"
+	},
+	data: {},
+	methods: {
+		async userInfoHandler(info) {
+			console.log(info);
+			if (!info.detail.rawData) return;
+			wx.showLoading({ title: "正在登录" });
+			await userLogin(JSON.parse(info.detail.rawData));
+			wx.hideLoading();
+			wx.showLoading({ title: "获取个人信息" });
+
+			await getUserProfile();
+			wx.hideLoading();
+			wx.navigateBack();
+		}
+	},
+
+	onLoad(option) {}
+});
+</script>
+
+<style>
+.content {
+	padding: 60rpx 80rpx 0 80rpx;
+}
+.login-btn {
+	margin-top: 150rpx;
+	width: 100%;
+}
+</style>
+
+
+<script type="application/json">
+  {
+    "usingComponents": {
+        "cu-custom": "../components/custom/custom-title.mpx"
+    },
+    "disableScroll": true,
+    "navigationStyle": "custom",
+    "navigationBarBackgroundColor": "#ffffff"
+  }
+</script>

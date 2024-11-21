@@ -1,0 +1,140 @@
+<template minapp='mpx' xlang='wxml'>
+	<view class="background flex-column">
+		<view class="top-area">
+			<van-search placeholder="搜索我的订单"></van-search>
+
+			<scroll-view scroll-x class="solid-bottom bg-white nav">
+				<view class="flex text-center">
+					<view
+						wx:for="{{orderState}}"
+						wx:key="{{item}}"
+						class="cu-item flex-sub {{orderStateActive==index?'text-orange cur':''}}"
+						bindtap="onOrderStateSwitch(index)"
+					>{{item}}</view>
+				</view>
+			</scroll-view>
+		</view>
+
+		<scroll-view scroll-y="{{true}}" class="list-area" bindscrolltoupper="onScrollUpper">
+
+
+            <view class="list-content-warper">
+                <view class="cu-load loading" wx:if="{{loading}}"></view>
+                <order-list content="{{orders}}"></order-list>
+            </view>
+
+		</scroll-view>
+	</view>
+</template>
+
+<script>
+import { createComponent } from "@mpxjs/core";
+import { getOrders } from "../service/order-service.js";
+import { throttle } from "throttle-debounce";
+let orderState = [
+	"正在进行",
+    "全部订单",
+    "已完成",
+    "待付款",
+    "待接单",
+    "已接单"
+];
+let orderStateEnum = [
+    "SHIPING",
+    "ALL",
+    "FINISHED",
+    "PENDING_PAYMENT",
+    "PENDING_ACCEPTANCE",
+    "PENDING_SHIPING"
+];
+
+
+
+createComponent({
+	options: {
+		styleIsolation: "apply-shared"
+	},
+	data: {
+        init: false,
+		orderStateActive: 0,
+		orderState,
+		orders: [],
+		loading: false,
+        disableLoading: false,
+        pageable: {
+            page: 0,
+            size: 20
+        }
+	},
+	methods: {
+        onDisplay() {
+            if(this.init) return;
+            this.init = true;
+            this.onOrderStateSwitch(0);
+        },
+		onScrollUpper(e) {
+            this.fetchOrder();
+            console.log(e)
+		},
+		onOrderStateSwitch(index) {
+			console.log(index);
+			this.orderStateActive = index;
+            this.pageable.page = 0;
+            orderStateEnum[index] == "ALL" ? this.fetchOrder(): this.fetchOrder(orderStateEnum[index]);
+		},
+
+		async fetchOrder(state) {
+            if(this.loading || this.disableLoading) return;
+            this.loading = true;
+            try{
+                let orders = await getOrders(state, this.pageable.page, 20);
+                console.log(orders);
+                this.orders = orders.items;
+            }
+            catch(e){
+                console.log(e)
+            }
+            finally{
+                this.loading = false;
+                this.disableLoading = true;
+                setTimeout(()=>{this.disableLoading = false}, 2000);
+            }
+		}
+	},
+	async ready() {
+	}
+});
+</script>
+
+
+<style>
+.background {
+	height: 100%;
+	background-color: #f5f5f5;
+}
+
+.top-area {
+}
+
+.list-area {
+	flex: 1;
+	overflow: auto;
+}
+
+.list-content-warper{
+    min-height: calc(100% + 1px);
+}
+</style>
+
+<script type="application/json">
+  {
+    "component": true,
+    "disableScroll": true,
+    "usingComponents":{
+        "van-search": "vant-weapp/dist/search/index",
+        "van-tab": "vant-weapp/dist/tab/index",
+        "van-tabs": "vant-weapp/dist/tabs/index",
+        "order-list": "./order-list"
+    }
+  }
+</script>

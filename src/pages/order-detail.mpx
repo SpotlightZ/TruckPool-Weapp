@@ -1,0 +1,286 @@
+<template>
+    <view class="flex-column max-page-height">
+        <view class="title-bar">
+            <cu-custom isCustom="{{true}}">
+                <view slot="content">订单详情</view>
+            </cu-custom>
+        </view>
+
+        <!-- 主体内容 -->
+        <scroll-view scroll-y class="main-content flex-sub">
+                <!-- BANNER -->
+            <view class="padding main-content light radius margin-top {{state.color}}" bindtap="bannerTapped">
+                <view class="text-xl">{{state.title}}</view>
+                <view class="text-sm">{{state.sub}}</view>
+            </view>
+
+            <!-- 简要内容 -->
+            <view class="title-card radius margin-top">
+                <view class="top bg-white padding">
+                    <!-- <text class="text-sm text-right order-id-sign">M10099879</text> -->
+                    <view class="text-center" style>
+                        <view class="text-xl">同城搬家</view>
+                        <!-- <view class="text-sm">2019-8-10</view> -->
+                    </view>
+                    <view class="solid-top margin-top padding-bottom"></view>
+                    <view class="cf">
+                        <text class="text-sm fl">起步价</text>
+                        <text class="text-df fr">6.00 $</text>
+                    </view>
+                    <view class="cf padding-top-sm">
+                        <text class="text-sm fl">里程费</text>
+                        <text class="text-df fr">79.12 $</text>
+                    </view>
+                    <view class="cf padding-top-sm">
+                        <text class="text-sm fl">人工费</text>
+                        <text class="text-df fr">26.80 $</text>
+                    </view>
+                    <view class="cf padding-top-sm">
+                        <text class="text-sm fl">订单总价</text>
+                        <text class="text-df fr">{{order.price}} $</text>
+                    </view>
+                    <view class="solid-top margin-top padding-bottom"></view>
+                    <view class="text-right">
+                        <text class="text-sm">实付金额</text>
+                        <text class="text-xxl text-black padding-sm">{{order.price}}</text>
+                        <text class="text-sm">加拿大元</text>
+
+                        <view class="text-sm margin-top-sm">*费用计算四舍五入去小数点后两位</view>
+                    </view>
+                </view>
+
+                <view class="feedback-btn solid-top">
+                    <text class="cuIcon-message"></text>
+                    <text class="text-df">投诉反馈</text>
+                </view>
+            </view>
+
+            <view class="bg-white radius margin-top">
+                <view class="cu-bar bg-white">
+                    <view class="action">
+                        <text class="cuIcon-titles text-green"></text>
+                        <text class="text-black">订单信息</text>
+                    </view>
+                </view>
+                <view class="padding-left padding-right padding-bottom">
+                    <view class="cf">
+                        <text class="text-sm fl">订单编号:</text>
+                        <text class="text-sm fr" bindtap="copy(order.serialId)">
+                            <text>{{order.serialId}}</text>
+                            <text class="margin-left text-orange">复制</text>
+                        </text>
+                    </view>
+                    <view class="cf padding-top-xs">
+                        <text class="text-sm fl">创建时间:</text>
+                        <text class="text-sm fr">{{order.createAt}}</text>
+                    </view>
+
+                    <view class="cf padding-top-xs" wx:if="{{order.payAt}}">
+                        <text class="text-sm fl">支付流水号:</text>
+                        <text class="text-sm fr">{{order.paymentSeries}}</text>
+                    </view>
+
+                    <view class="cf padding-top-xs" wx:if="{{order.payAt}}">
+                        <text class="text-sm fl">支付渠道:</text>
+                        <text class="text-sm fr">{{order.paymentMethod}}</text>
+                    </view>
+
+
+                    <view class="cf padding-top-xs" wx:if="{{order.payAt}}">
+                        <text class="text-sm fl">付款时间:</text>
+                        <text class="text-sm fr">{{order.payAt}}</text>
+                    </view>
+                    <!--
+                    <view class="cf padding-top-xs">
+                        <text class="text-sm fl">付款时间</text>
+                        <text class="text-sm fr">034892-947104782</text>
+                    </view>-->
+                </view>
+            </view>
+
+            <view class="bg-white radius margin-top">
+                <view class="cu-bar bg-white">
+                    <view class="action">
+                        <text class="cuIcon-titles text-green"></text>
+                        <text class="text-black">行程信息</text>
+                    </view>
+                </view>
+                <view class="padding-left padding-right padding-bottom">
+
+                </view>
+            </view>
+
+            <!-- 订单进度 -->
+            <view class="bg-white radius margin-top">
+                <view class="cu-bar bg-white">
+                    <view class="action">
+                        <text class="cuIcon-titles text-green"></text>
+                        <text class="text-black">订单进度追踪</text>
+                    </view>
+                </view>
+                <view class="cu-timeline">
+                    <view class="cu-item" wx:for="{{progress}}" wx:key="index">
+                        <view class="timeline-item content">
+                            <view class="cu-capsule radius">
+                                <view class="cu-tag bg-gray light">{{item.time}}</view>
+                            </view>
+                            <view class="margin-top-sm">{{item.message}}</view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+
+        </scroll-view>
+    </view>
+</template>
+
+<script>
+import { createPage } from "@mpxjs/core";
+import store from "../store.js";
+import { createPayment } from '../components/payment.js';
+import { getOrderDetail } from '../service/order-service.js';
+import * as moment from "moment";
+
+const STATE_MAPPING = {
+        PENDING_PAYMENT:        { title: "等待付款",    sub: "订单待付款，点击此处付款。",      color: "bg-yellow" },
+        PENDING_PAYMENT_RESULT: { title: "等到确认付款", sub: "您的订单已付款，正在确认中，请耐心等候。",  color: "bg-orange" },
+        PENDING_ACCEPTANCE:     { title: "接单中",      sub: "您的订单正在等待被司机接受。",            color: "bg-orange" },
+        PENDING_SHIPING:        { title: "前往出发地",   sub: "司机正在前往出发地，请保持联系方式畅通。",  color: "bg-blue" },
+        SHIPING:                { title: "运输中",      sub: "您的货物正在前往目的地，请耐心等候。",      color: "bg-blue" },
+        FINISHED:               { title: "订单已完成",   sub: "感谢您的信任与支持，期待再次光临。",       color: "bg-olive" },
+        CLOSED:                 { title: "订单已关闭",   sub: "",       color: "bg-grey" }
+}
+
+
+let progress = [
+    {
+        time: new Date().toLocaleTimeString(),
+        message: "您的货物已经送达"
+    },
+    {
+        time: new Date().toLocaleTimeString(),
+        message: "司机已经到达目的地"
+    },
+    {
+        time: new Date().toLocaleTimeString(),
+        message: "司机已经到达起点"
+    },
+    {
+        time: new Date().toLocaleTimeString(),
+        message: "订单已经受理"
+    }
+];
+
+const dotColorMapping = {
+    FINISHED: "orange",
+    IN_PROGRESS: "orange",
+    ENDING_PAYMENT: "orange",
+    CANCLED: "orange"
+};
+
+createPage({
+    options: {
+        styleIsolation: "apply-shared"
+    },
+    data: {
+        progress,
+        order: {},
+        serialId: '',
+        state: {}
+    },
+    methods: {
+        copy(data) {
+            wx.setClipboardData({ data });
+        },
+        async fetchData() {
+            try{
+                wx.showLoading({title: '加载详情中'});
+                let data = await getOrderDetail(this.serialId);
+                this.order = data;
+                this.order.createAt = moment(this.order.createAt).format('YYYY-MM-DD hh:mm:ss ddd');
+                if(this.order.payAt) this.order.payAt = moment(this.order.payAt).format('YYYY-MM-DD hh:mm:ss ddd');
+                if(this.order.startAt) this.order.startAt = moment(this.order.startAt).format('YYYY-MM-DD hh:mm:ss ddd');
+
+                this.state = STATE_MAPPING[data.state]
+            }
+            catch(e){
+                console.log(e)
+            }
+            finally{
+                wx.hideLoading();
+            }
+
+        },
+        bannerTapped(){
+            if('PENDING_PAYMENT' == this.order.state){
+                console.log(this.order);
+                createPayment(this.order.serialId);
+            }
+        }
+
+    },
+    onLoad(options) {
+        this.serialId = options.id;
+        this.fetchData();
+        console.log("Order detail " + options.id);
+    }
+});
+</script>
+
+<style>
+page {
+    background: #f9f9f9;
+}
+.title-bar {
+    color: black;
+    background: white;
+}
+
+.title-card {
+    border-radius: 5rpx;
+    overflow: hidden;
+}
+.title-card .top {
+}
+
+.title-card .feedback-btn {
+    background: #fdfdfd;
+    text-align: center;
+    vertical-align: center;
+    line-height: 60rpx;
+    height: 60rpx;
+}
+
+.radius {
+    border-radius: 12rpx;
+}
+
+.main-content {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+    overflow: auto;
+}
+.timeline-item {
+    background: #fafafa !important;
+}
+.order-id-sign {
+    color: #fdfdfd;
+    position: top;
+}
+.text-xxl {
+    font-size: 46rpx;
+}
+</style>
+
+
+<script type="application/json">
+  {
+    "usingComponents": {
+        "cu-custom": "../components/custom/custom-title.mpx"
+    },
+    "disableScroll": true,
+    "navigationStyle": "custom",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black"
+  }
+</script>

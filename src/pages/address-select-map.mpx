@@ -1,0 +1,272 @@
+<template>
+    <view class="flex-column max-page-height">
+        <view class="title-bar solid-bottom super-zindex bg-white">
+            <cu-custom isCustom="{{true}}">
+                <view slot="content">{{title}}</view>
+            </cu-custom>
+        </view>
+        <view class="cu-bar search bg-white solid-bottom super-zindex">
+            <view class="search-form radius-xs">
+                <text class="cuIcon-search"></text>
+                <input
+                    type="text"
+                    placeholder="搜索地点"
+                    bindtap="showMask(true)"
+                    bindinput="searchInput"
+                />
+            </view>
+            <view wx:if="{{mask}}" class="action" bindtap="showMask(false)">取消</view>
+        </view>
+        <scroll-view class="super-zindex {{list?'flex-sub':''}} bg-white" wx:if="{{list}}">
+            <view class="cu-load.loading" wx:if="{{searchLoading}}"></view>
+            <view class="cu-list menu sm-border solid-bottom" wx:if="{{!searchLoading}}">
+                <view class="cu-item" wx:for="{{suggestions}}" bindtap="suggestionSelect(item)">
+                    <view class="content padding-tb-sm">
+                        <view>{{item.name}}</view>
+                        <view class="text-gray text-sm">{{item.text}}</view>
+                    </view>
+                </view>
+            </view>
+        </scroll-view>
+        <map
+            id="address-select-map"
+            longitude="{{current.lng}}"
+            latitude="{{current.lat}}"
+            class="map {{list?'hidden':'flex-sub'}}"
+            scale="18"
+            controls="{{controls}}"
+            bindcontroltap="controltap"
+            markers="{{markers}}"
+            bindmarkertap="markertap"
+            polyline="{{polyline}}"
+            bindregionchange="mapChange"
+            show-location
+        ></map>
+
+        <view class="solid-top {{list?'hidden':''}} padding flex bottom-bar">
+            <text class="padding-right flex-sub text-lg">{{location}}</text>
+            <button class="cu-btn round shadow" bindtap="confirmClick">确定</button>
+        </view>
+
+        <view class="cu-modal bottom-modal radius-top {{mask?'show':''}}" bindtap="showMask(false)"></view>
+    </view>
+</template>
+
+<script>
+import { createPage } from "@mpxjs/core";
+import store from "../store.js";
+import {
+    geoToAddress,
+    locationSuggest,
+    placeDetail
+} from "../service/address-service.js";
+import { debounce } from "throttle-debounce";
+createPage({
+    options: {
+        styleIsolation: "apply-shared"
+    },
+    data: {
+        title: "",
+        location: "",
+        current: { lat: 49.2480425, lng: -123.1730364 },
+        mask: false,
+        list: false,
+        searchLoading: false,
+        suggestions: [],
+        searchText: "",
+        selectedLocation: {}
+    },
+    methods: {
+        async mapChange(e) {
+            if (
+                e.type == "end" &&
+                (e.causedBy == "scale" || e.causedBy == "drag")
+            ) {
+                this.location = "正在定位...";
+                try{
+                    let center = await this.getCenterPoint();
+                    let address = await geoToAddress(
+                        center.latitude,
+                        center.longitude
+                    );
+
+                    this.selectedLocation = {
+                        geo: center,
+                        name: address.resourceSets[0].resources[0].name,
+                        text: address.resourceSets[0].resources[0].address.formattedAddress
+                    };
+                    console.log(address.resourceSets[0].resources[0]);
+                    this.location = address.resourceSets[0].resources[0].name;
+                }
+                catch(e) {
+
+                }
+                finally{
+
+                }
+
+
+            }
+        },
+        async getCenterPoint() {
+            return new Promise((res, rej) => {
+                this.map.getCenterLocation({
+                    type: "gcj02",
+                    success: result => {
+                        console.log(result);
+                        res(result);
+                    }
+                });
+            });
+        },
+        showMask(show) {
+            this.mask = show;
+            if (!show) {
+                this.list = false;
+            }
+        },
+        searchInput(event) {
+            this.searchText = event.detail.value;
+            if (this.searchText.length == 0) {
+                this.list = false;
+                this.searchLoading = false;
+                return;
+            }
+            this.list = true;
+            this.searchLoading = true;
+            this.querySuggestionWrapper(
+                this.searchText,
+                this.current,
+                5000,
+                10
+            );
+        },
+        async suggestionSelect(item) {
+            let result = await placeDetail(item.link);
+            this.selectedLocation = {
+                geo: result.geo,
+                name: item.name,
+                text: item.text
+            };
+            console.log(result);
+            this.mask = false;
+            this.list = false;
+            this.searchLoading = false;
+        },
+        async querySuggestion(query, location, radius, maxResult) {
+            if (this.searchText.length == 0) {
+                return;
+            }
+            console.log(query);
+            let result = (await locationSuggest(
+                query,
+                location,
+                radius,
+                maxResult
+            )).value;
+            console.log(result);
+            this.searchLoading = false;
+            this.suggestions = result
+                .filter(i =>
+                    ["PostalAddress", "Place", "LocalBusiness"].includes(
+                        i._type
+                    )
+                )
+                .map(i => {
+                    switch (i._type) {
+                        case "PostalAddress":
+                            return {
+                                text: i.text,
+                                name: i.streetAddress,
+                                link: i.readLink
+                            };
+                        case "Place":
+                            return {
+                                text: i.text,
+                                name: i.address.text || i.name,
+                                link: i.readLink
+                            };
+                        case "LocalBusiness":
+                            return {
+                                text: i.address.text,
+                                name: i.name,
+                                link: i.readLink
+                            };
+                    }
+                });
+            this.list = this.suggestions.length > 0;
+        },
+        confirmClick() {
+            let pages = getCurrentPages();
+            let prevPage = pages[pages.length - 2];
+            prevPage[this.callbackName](this.selectedLocation);
+            wx.navigateBack();
+        }
+    },
+
+    onLoad(option) {
+        this.querySuggestionWrapper = debounce(800, this.querySuggestion);
+        this.map = wx.createMapContext("address-select-map");
+        this.title = option.title ? option.title : "地址选择";
+
+        this.callbackName = option.callback;
+        this.defaultLocation = {
+            lat: option.lat,
+            lng: option.lng
+        };
+        wx.getLocation({
+            type: "wgs84",
+            success: res => {
+                this.current.lat = res.latitude;
+                this.current.lng = res.longitude;
+                this.location = res.resourceSets[0].resources[0].name;
+
+                console.log("res", res);
+            }
+        });
+    }
+});
+</script>
+
+<style>
+page {
+    background: white;
+    height: 100vh;
+}
+.background {
+    height: 100vh;
+}
+.map {
+    width: 100%;
+}
+.float-pannel {
+    position: absolute;
+
+    height: 100rpx;
+    left: 100rpx;
+    right: 100rpx;
+    bottom: 100rpx;
+}
+.super-zindex {
+    z-index: 2210;
+}
+.hidden {
+    display: none;
+}
+.bottom-bar {
+    height: 150rpx;
+    align-items: center;
+}
+</style>
+
+
+<script type="application/json">
+  {
+    "usingComponents": {
+        "cu-custom": "../components/custom/custom-title.mpx"
+    },
+    "disableScroll": true,
+    "navigationStyle": "custom",
+    "navigationBarBackgroundColor": "#ffffffff"
+  }
+</script>

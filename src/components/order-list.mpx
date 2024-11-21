@@ -1,0 +1,114 @@
+<template minapp='mpx' xlang='wxml'>
+    <view class="cu-card article">
+        <view
+            wx:for="{{listContent}}"
+            wx:key="{{item.id}}"
+            class="cu-item"
+            bindtap="handleItemTap(item.serialId)"
+        >
+            <view class="title">
+                <view class="text-cut">
+                    <view class="flex">
+                        <view class="flex-sub">
+                            <view class="cu-tag bg-black light round sm">{{item.type}}</view>
+                        </view>
+                        <view class="flex-sub text-right">
+                            <view
+                                class="cu-tag {{'bg-' + item.stateColor}} light round sm"
+                            >{{item.state}}</view>
+                            <text class="icon cuIcon-right text-grey"></text>
+                        </view>
+                    </view>
+                </view>
+            </view>
+            <view class="content">
+                <view class="desc">
+                    <view class="text-content">
+                        <view>
+                            <text class="icon cuIcon-timefill text-grey"></text>
+                            {{item.createAt}}
+                        </view>
+                        <view class="text-cut">
+                            <text class="icon cuIcon-title text-green"></text>
+                            {{item.detail.from.address}}
+                        </view>
+                        <view class="text-cut">
+                            <text class="icon cuIcon-title text-orange"></text>
+                            {{item.detail.to.address}}
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </view>
+</template>
+
+<script>
+import { createComponent } from "@mpxjs/core";
+import * as moment from "moment";
+const STATE_COLOR_MAP = {
+    "SHIPING": "green",
+    "FINISHED": "grey",
+    "PENDING_PAYMENT": "orange",
+    "PENDING_ACCEPTANCE": "orange",
+    "PENDING_SHIPING": "green"
+};
+
+const STATE_TEXT_MAP = {
+    "SHIPING": "正在进行",
+    "ALL": "全部订单",
+    "FINISHED": "已完成",
+    "PENDING_PAYMENT": "待付款",
+    "PENDING_ACCEPTANCE": "待接单",
+    "PENDING_SHIPING": "已接单"
+};
+
+let TYPE_TEXT_MAP = {
+    "INTER_CITY": "同城货运",
+    "CITY": "城际货运"
+}
+
+createComponent({
+    options: {
+        styleIsolation: "apply-shared"
+    },
+    properties: {
+        content: {
+            type: Array,
+            value: []
+        }
+    },
+    data: {},
+    methods: {
+        handleItemTap(id) {
+            console.log("Jupm to order page; order id=" + id);
+            wx.navigateTo({ url: "order-detail?id=" + id });
+        }
+    },
+    computed: {
+        listContent() {
+            return this.content.map(i => {
+                i.stateColor = STATE_COLOR_MAP[i.state];
+                i.state = STATE_TEXT_MAP[i.state];
+                i.type = TYPE_TEXT_MAP[i.type];
+                i.createAt = moment(i.createAt).format('YYYY-MM-DD hh:mm:ss dddd');
+                return i;
+            });
+        }
+    }
+});
+</script>
+
+
+<style lang="stylus">
+.icon {
+    display: inline-block;
+    padding-right: 10rpx;
+}
+</style>
+
+<script type="application/json">
+  {
+    "component": true
+  }
+</script>

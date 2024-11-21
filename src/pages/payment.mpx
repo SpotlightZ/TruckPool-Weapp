@@ -1,0 +1,48 @@
+<template>
+   <web-view src="https://zhuanlan.zhihu.com/p/40823432"></web-view>
+</template>
+
+<script>
+import { createPage } from "@mpxjs/core";
+import store from "../store.js";
+
+
+createPage({
+    options: {
+        styleIsolation: "apply-shared"
+    },
+    data: {
+
+    },
+    methods: {
+
+    },
+
+    onLoad(option) {
+
+    }
+});
+</script>
+
+<style>
+page {
+    background: white;
+    height: 100vh;
+}
+.background {
+    height: 100vh;
+}
+
+</style>
+
+
+<script type="application/json">
+  {
+    "usingComponents": {
+        "cu-custom": "../components/custom/custom-title.mpx"
+    },
+    "disableScroll": true,
+    "navigationStyle": "custom",
+    "navigationBarBackgroundColor": "#ffffffff"
+  }
+</script>

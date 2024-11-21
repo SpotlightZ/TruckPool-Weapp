@@ -1,0 +1,210 @@
+<template minapp='mpx' xlang='wxml'>
+    <scroll-view class="max-height" style="overflow:hidden">
+        <!-- <image class="bkgimage" src="{{bkgimage}}" /> -->
+        <swiper
+            class="screen-swiper round-dot"
+            indicator-dots="true"
+            circular="true"
+            autoplay="true"
+            interval="5000"
+            duration="500"
+        >
+            <swiper-item wx:for="{{swiperList}}" wx:key="{{swiperList.id}}">
+                <image src="{{item.url}}" mode="aspectFill" wx:if="{{item.type=='image'}}" />
+                <video
+                    src="{{item.url}}"
+                    autoplay
+                    loop
+                    muted
+                    show-play-btn="{{false}}"
+                    controls="{{false}}"
+                    objectFit="cover"
+                    wx:if="{{item.type=='video'}}"
+                ></video>
+            </swiper-item>
+        </swiper>
+
+        <view class="content">
+            <view class="menu-card grid col-2 text-left shadow">
+                <view class="card-item solid-right" bindtap="createOrder('intracity')">
+                    <text class="icon iconfont icon-package-box text-red text-shadow"></text>
+                    <view class="text">
+                        <text class="block text-lg text-bold">城际货运</text>
+                        <text class="text-df text-gray">同城一日达</text>
+                    </view>
+                </view>
+                <view class="card-item" bindtap="createOrder('moving')">
+                    <text class="icon iconfont icon-express-car text-red text-shadow"></text>
+                    <view class="text">
+                        <text class="block text-lg text-bold">货运搬家</text>
+                        <text class="text-df text-gray">搬家好帮手</text>
+                    </view>
+                </view>
+                <view class="card-item solid-top solid-right">
+                    <text class="icon iconfont icon-national text-red text-shadow"></text>
+                    <view class="text">
+                        <text class="block text-lg text-bold">国际海运</text>
+                        <text class="text-df text-gray">大件国际及港澳台</text>
+                    </view>
+                </view>
+                <view class="card-item solid-top">
+                    <text class="icon iconfont icon-package text-red text-shadow"></text>
+                    <view class="text">
+                        <text class="block text-lg text-bold">包装材料</text>
+                        <text class="text-df text-gray">纸箱泡沫胶带</text>
+                    </view>
+                </view>
+            </view>
+
+            <view class="func-card grid col-4 text-center shadow">
+                <view class="item col-1 text-df solid-right">
+                    <text class="icon-sm iconfont icon-invite text-red text-shadow"></text>
+                    <view class="text">邀请有礼</view>
+                </view>
+                <view class="item col-1 text-df solid-right">
+                    <text class="icon-sm iconfont icon-ticket text-red text-shadow"></text>
+                    <view class="text">领取优惠</view>
+                </view>
+                <view class="item col-1 text-df solid-right">
+                    <text class="icon-sm iconfont icon-driver text-red text-shadow"></text>
+                    <view class="text">成为司机</view>
+                </view>
+                <view class="item col-1 text-df">
+                    <text class="icon-sm iconfont icon-bulb text-red text-shadow"></text>
+                    <view class="text">使用攻略</view>
+                </view>
+            </view>
+        </view>
+    </scroll-view>
+</template>
+
+<script>
+import { createComponent } from "@mpxjs/core";
+import bkg from "../image/bkg.png";
+createComponent({
+    options: {
+        styleIsolation: "apply-shared"
+    },
+    data: {
+        orderTypeActive: 0,
+        bkgimage: bkg,
+        swiperList: [
+            {
+                id: 0,
+                type: "image",
+                url: "http://img60.ddimg.cn/2019/8/2/2019080211094642478.jpg"
+            },
+            {
+                id: 1,
+                type: "image",
+                url:
+                    "https://aecpm.alicdn.com/simba/img/TB1JNHwKFXXXXafXVXXSutbFXXX.jpg"
+            },
+            {
+                id: 2,
+                type: "image",
+                url:
+                    "https://ossweb-img.qq.com/images/lol/web201310/skin/big39000.jpg"
+            },
+            {
+                id: 3,
+                type: "image",
+                url:
+                    "https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg"
+            },
+            {
+                id: 4,
+                type: "image",
+                url:
+                    "https://ossweb-img.qq.com/images/lol/web201310/skin/big25011.jpg"
+            },
+            {
+                id: 5,
+                type: "image",
+                url:
+                    "https://ossweb-img.qq.com/images/lol/web201310/skin/big21016.jpg"
+            },
+            {
+                id: 6,
+                type: "image",
+                url:
+                    "https://ossweb-img.qq.com/images/lol/web201310/skin/big99008.jpg"
+            }
+        ]
+    },
+    methods: {
+        onOrderTypeSwitch(event) {
+            console.log(event);
+            this.orderTypeActive = event.detail.index;
+        },
+        createOrder(type) {
+            wx.navigateTo({
+                url: `/pages/create-order?type=${type}`
+            });
+        }
+    }
+});
+</script>
+
+<style>
+.content {
+    margin-top: 30rpx;
+    margin-left: 20rpx;
+    margin-right: 20rpx;
+}
+
+.menu-card {
+    background-color: white;
+    border-radius: 10rpx;
+}
+
+.menu-card .card-item {
+    height: 160rpx;
+    padding-left: 30rpx;
+}
+.card-item > view {
+    display: inline-block;
+    padding-left: 30rpx;
+}
+.menu-card .text {
+    padding-top: 40rpx;
+}
+.menu-card .icon {
+    vertical-align: top;
+    padding-top: 50rpx;
+    font-size: 60rpx;
+    display: inline-block;
+    width: 60rpx;
+}
+.func-card {
+    margin-top: 30rpx;
+    background-color: white;
+    border-radius: 10rpx;
+}
+
+.func-card .item {
+    padding-top: 24rpx;
+    padding-bottom: 24rpx;
+}
+
+.func-card .item .icon-sm {
+    font-size: 40rpx;
+    display: inline-block;
+}
+.func-card .item .text {
+    padding-top: 14rpx;
+}
+
+.shadow {
+    box-shadow: rgb(236, 236, 236) 0px 0px 8rpx;
+}
+</style>
+
+<script type="application/json">
+  {
+    "component": true,
+    "usingComponents":{
+
+    }
+  }
+</script>

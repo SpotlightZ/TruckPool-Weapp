@@ -1,0 +1,39 @@
+<template>
+	<view>
+		<text>申请获取以下权限</text>
+		<text>获取你的公开信息(昵称.头像等)</text>
+		<button class="loginBtn" bindgetuserinfo="getUserInfo" open-type="getUserInfo">授权登录</button>
+	</view>
+</template>
+
+<script>
+import { createPage } from "@mpxjs/core";
+
+createPage({
+	options: {
+		styleIsolation: "apply-shared"
+	},
+	data: {},
+	getUserInfo(data) {
+		wx.login({
+			success: function(res) {
+				var code = res.code;
+				if (code) {
+					console.log(res);
+				} else {
+					console.log("获取用户登录态失败：" + res.errMsg);
+				}
+			}
+		});
+	},
+	onLoad() {}
+});
+</script>
+
+
+<script type="application/json">
+{
+      "navigationBarBackgroundColor": "#ffffff",
+      "navigationBarTextStyle": "black"
+}
+</script>

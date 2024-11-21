@@ -1,0 +1,115 @@
+<template minapp='mpx' xlang='wxml'>
+    <view class="background">
+        <view class="avator-area shadow">
+            <image class="avator" src="{{userProfile.avator}}"></image>
+            <view class="avator-info">
+                <text class>{{userProfile.nicName}}</text>
+                <view>
+                    <text class>Lv.0</text>
+                </view>
+            </view>
+        </view>
+        <scroll-view class="scroll" scroll-y="{{true}}">
+            <view class="function-area">
+                <van-cell-group>
+                    <van-cell is-link title="地址簿" size="large" />
+                    <van-cell is-link title="优惠券" label="您有3张优惠券未使用" size="large" />
+                    <van-cell is-link title="手机号绑定" value="{{userProfile.phone?userProfile.phone:'去绑定'}}" size="large" />
+					<van-cell is-link title="邮箱绑定" value="{{userProfile.email?userProfile.email:'去绑定'}}" size="large" />
+                </van-cell-group>
+            </view>
+            <view class="function-area">
+                <van-cell-group>
+                    <van-cell is-link title="举报投诉" size="large" />
+                    <van-cell is-link title="联系客服" size="large" />
+                    <van-cell is-link title="意见反馈" size="large" />
+                </van-cell-group>
+            </view>
+            <view class="function-area">
+                <van-button block="{{true}}" type="default" bindtap="handleLogout">退出登录</van-button>
+            </view>
+        </scroll-view>
+    </view>
+</template>
+
+<script>
+import { createComponent } from "@mpxjs/core";
+import { userLogout } from "../service/access-service.js";
+import { getUserProfile } from "../service/user-service.js";
+import store from "../store.js";
+createComponent({
+    data: {
+
+	},
+	computed: store.mapState([
+		'userProfile'
+  	]),
+    methods: {
+        handleLogout() {
+            console.log(userLogout);
+            userLogout();
+        }
+    },
+    ready() {
+		console.log(this.profile)
+	}
+});
+</script>
+
+
+<style>
+.background {
+    flex-direction: column;
+    display: flex;
+}
+.avator-area {
+    background-color: white;
+    padding: 10px 0px 30px 10px;
+    display: flex;
+}
+
+.avator-area .avator {
+    background-color: grey;
+    border-radius: 5px;
+    height: 60px;
+    width: 60px;
+    margin: 0px 15px;
+}
+
+.avator-area .avator-info {
+    flex: 1;
+}
+
+.function-area {
+    margin-top: 25rpx;
+    margin-bottom: 25rpx;
+}
+
+.logout-btn {
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.scroll {
+    flex: 1;
+}
+
+.shadow {
+    border-bottom: 1px solid #f5f5f5;
+    box-shadow: 0 3px 3px -1px #f0f0f0;
+}
+</style>
+
+<script type="application/json">
+  {
+    "component": true,
+    "usingComponents":{
+        "van-search": "vant-weapp/dist/search/index",
+        "van-tab": "vant-weapp/dist/tab/index",
+        "van-tabs": "vant-weapp/dist/tabs/index",
+        "van-cell": "vant-weapp/dist/cell/index",
+        "van-cell-group": "vant-weapp/dist/cell-group/index",
+        "van-button": "vant-weapp/dist/button/index"
+    }
+  }
+</script>
